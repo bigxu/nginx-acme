@@ -1,0 +1,26 @@
+version: "2.1"
+services:
+  nginx-srv:
+    image: nginx:mainline
+    restart: always
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./acme.sh:/acme.sh
+    links:
+      - acme-sh:acme-sh
+    ports:
+      - "443:443/tcp"
+      - "80:80/tcp"
+    networks:
+      - proxy_net
+  acme-sh:
+    image: neilpang/acme.sh
+    command: daemon
+    volumes:
+      - ./acme.sh:/acme.sh
+    networks:
+      - proxy_net
+networks:
+  proxy_net:
+    external:
+      name: devilbox_app_net

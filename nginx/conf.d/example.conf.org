@@ -1,0 +1,73 @@
+server {
+	listen       80;
+	server_name  .example.com;
+	location ~ "^/\.well-known/acme-challenge/([-_a-zA-Z0-9]+)$" {
+	    default_type text/plain;
+	    proxy_read_timeout    60;
+	    proxy_connect_timeout 60;
+	    proxy_redirect        off;
+	    proxy_set_header      X-Real-IP $remote_addr;
+	    proxy_set_header      X-Forwarded-For $proxy_add_x_forwarded_for;
+	    proxy_set_header      X-Forwarded-Proto $scheme;
+	    proxy_set_header      Host $host;
+
+	    proxy_pass http://acme-sh;
+	}
+
+	location / {
+		rewrite ^(.*)$  https://$host$1 permanent;  
+	}
+
+}
+
+
+
+server {
+   	listen 443 ssl default deferred;
+	server_name  .example.com;
+
+        ssl_certificate         /acme.sh/example.com/fullchain.cer;
+	ssl_certificate_key     /acme.sh/example.com/example.com.key;
+
+  
+  	# Improve HTTPS performance with session resumption
+  	ssl_session_cache shared:SSL:10m;
+  	ssl_session_timeout 5m;
+
+	# Enable server-side protection against BEAST attacks
+  	ssl_prefer_server_ciphers on;
+	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+  		
+  	# Disable SSLv3
+  	ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+
+    	# Diffie-Hellman parameter for DHE ciphersuites
+        # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
+	ssl_dhparam             /acme.sh/dhparam.pem;
+
+	# Enable HSTS (https://developer.mozilla.org/en-US/docs/Security/HTTP_Strict_Transport_Security)
+	add_header Strict-Transport-Security "max-age=63072000; includeSubdomains";  
+
+  	# Enable OCSP stapling (http://blog.mozilla.org/security/2013/07/29/ocsp-stapling-in-firefox)
+  	ssl_stapling on;
+  	ssl_stapling_verify on;
+  	ssl_trusted_certificate  /acme.sh/example.com/fullchain.cer;
+  	resolver 8.8.8.8 8.8.4.4 valid=300s;
+  	resolver_timeout 5s;
+
+	location / {
+	    default_type text/plain;
+	    proxy_read_timeout    60;
+	    proxy_connect_timeout 60;
+	    proxy_redirect        off;
+	    proxy_set_header      X-Real-IP $remote_addr;
+	    proxy_set_header      X-Forwarded-For $proxy_add_x_forwarded_for;
+	    proxy_set_header      X-Forwarded-Proto $scheme;
+	    proxy_set_header      Host $host;
+
+	    proxy_pass http://intranet-httpd;
+	}
+}
+
+
+
