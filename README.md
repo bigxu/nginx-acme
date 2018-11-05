@@ -32,5 +32,4 @@ Tips:
 proxy_set_header RHost $host;  
 proxy_set_header Host maintenance.loc;
 
-so i do not need change anything about devilbox config ,  
-just as local;
+so i do not need change anything about devilbox config , just as local;
